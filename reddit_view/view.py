@@ -1,17 +1,26 @@
 #!/usr/bin/env python
 from pprint import pprint
-import sys, argparse, requests, json, time, re, itertools
+import sys
+import argparse
+import requests
+import json
+import time
+import re
+import itertools
 
 PATTERNS = {
     'gallery':  (lambda x: re.compile(".+\/(a|gallery|gfycat)\/.+$").match(x)),
-    'comments': (lambda x:  re.compile(".+\/comments\/.+$").match(x)),
-    'ext':  (lambda x:  re.compile("^.+\.(jpg|png|jpeg|gif)(.+)?$").match(x)),
-    'imgur':  (lambda  x: re.compile(".+\/imgur\/.+$").match(x)),
-    'not_img': (lambda  x:  re.compile(".+(video|html|\/)(.+)?$").match(x)),}
+    'comments': (lambda x: re.compile(".+\/comments\/.+$").match(x)),
+    'ext':  (lambda x: re.compile("^.+\.(jpg|png|jpeg|gif)(.+)?$").match(x)),
+    'imgur':  (lambda x: re.compile(".+\/imgur\/.+$").match(x)),
+    'not_img': (lambda x: re.compile(".+(video|html|\/)(.+)?$").match(x)),
+    }
 
 
 class RedditLogic:
-    request_headers = {'User-Agent': 'curl/7.24.0', 'Content-Type': 'application/json; charset=UTF-8'}
+    request_headers = {
+            'User-Agent': 'curl/7.24.0',
+            'Content-Type': 'application/json; charset=UTF-8'}
     combinations = []
 
     def __init__(self, *args, **kwargs):
@@ -25,9 +34,10 @@ class RedditLogic:
         return set(self.match_pattern())
 
     def match_pattern(self):
-        clean_urls =[]
+        clean_urls = []
         for url in self.urls_to_filter:
-            if (not PATTERNS['gallery'](url)) and (not PATTERNS['comments'](url)):
+            if (not PATTERNS['gallery'](url)) and \
+                    (not PATTERNS['comments'](url)):
                 if (PATTERNS['ext'](url)):
                     clean_urls.append(url)
                 elif not PATTERNS['not_img'](url):
@@ -35,7 +45,6 @@ class RedditLogic:
                     clean_urls.append(merged)
 
         return clean_urls
-
 
     def extract_image_url(self, data):
         links = []
@@ -61,7 +70,7 @@ class RedditLogic:
 
     def form_urls(self, index, subreddit, order, count):
         url = r'http://www.reddit.com/' + index + '/' + subreddit
-        tail = '/.json'+ '?limit=' + count
+        tail = '/.json' + '?limit=' + count
         url += '/' + order
         url += tail
         return url
@@ -77,15 +86,45 @@ class RedditLogic:
         clean_subreddits = filter(None, clean_subreddits)
         clean_order = [x.strip() for x in self.o.split(',')]
         clean_order = filter(None, clean_order)
-        return list(itertools.product( self.i, clean_subreddits, clean_order, [self.c,]))
+        return list(
+                itertools.product(
+                    self.i,
+                    clean_subreddits,
+                    clean_order,
+                    [self.c, ]))
+
 
 def set_up_parser():
     parser = argparse.ArgumentParser(description='Parse arguments')
-    parser.add_argument('-i', '--i', metavar='r', nargs='?', help='Index for subs', default='r', required=False)
-    parser.add_argument('-s', '--s', metavar='funy,', nargs='?', help='comma seperated list of subreddits', default='funy,', required=False)
-    parser.add_argument('-o', '--o', metavar='hot,top', nargs='?', help='comma seperated list of orders', default='hot,', required=False)
-    parser.add_argument('-c', '--c', metavar='nnn', nargs='?', help='count of posts to consider', default='100', required=False)
-    parser.add_argument('-p', '--p', metavar='nnn', nargs='?', help='count of points post must have', default='100', required=False)
+    parser.add_argument(
+            '-i', '--i',
+            metavar='r', nargs='?',
+            help='Index for subs', default='r', required=False)
+
+    parser.add_argument(
+            '-s', '--s',
+            metavar='funy,', nargs='?',
+            help='comma seperated list of subreddits',
+            default='funy,', required=False)
+
+    parser.add_argument(
+            '-o', '--o',
+            metavar='hot,top', nargs='?',
+            help='comma seperated list of orders',
+            default='hot,', required=False)
+
+    parser.add_argument(
+            '-c', '--c',
+            metavar='nnn', nargs='?',
+            help='count of posts to consider',
+            default='100', required=False)
+
+    parser.add_argument(
+            '-p', '--p',
+            metavar='nnn', nargs='?',
+            help='count of points post must have',
+            default='100', required=False)
+
     args = parser.parse_args()
     return args
 
