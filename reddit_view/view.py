@@ -2,7 +2,12 @@
 from pprint import pprint
 import sys, argparse, requests, json, time, re, itertools
 
-PATTERNS = {}
+PATTERNS = {
+    'gallery':  (lambda x: re.compile(".+\/(a|gallery|gfycat)\/.+$").match(x)),
+    'comments': (lambda x:  re.compile(".+\/comments\/.+$").match(x)),
+    'ext':  (lambda x:  re.compile("^.+\.(jpg|png|jpeg|gif)(.+)?$").match(x)),
+    'imgur':  (lambda  x: re.compile(".+\/imgur\/.+$").match(x)),
+    'not_img': (lambda  x:  re.compile(".+(video|html|\/)(.+)?$").match(x)),}
 
 
 class RedditLogic:
@@ -15,33 +20,64 @@ class RedditLogic:
 
     def dispatch(self):
         self.combinations = self.combinatronics_of_params()
-        urls = self.concat_urls()
+        self.urls = self.concat_urls()
+        self.urls_to_filter = self.get_image_urls()
+        return set(self.match_pattern())
+
+    def match_pattern(self):
+        clean_urls =[]
+        for url in self.urls_to_filter:
+            if (not PATTERNS['gallery'](url)) and (not PATTERNS['comments'](url)):
+                if (PATTERNS['ext'](url)):
+                    clean_urls.append(url)
+                elif not PATTERNS['not_img'](url):
+                    merged = imgur_link + '.jpg'
+                    clean_urls.append(merged)
+
+        return clean_urls
+
+
+    def extract_image_url(self, data):
+        links = []
+        for child in data['data']['children']:
+            score = child['data']['score']
+            if int(score) >= int(self.p):
+                links.append(child['data']['url'])
+        return links
+
+    def get_json(self, url):
+        r = requests.get(url, headers=self.request_headers)
+        return r.json()
+
+    def get_image_urls(self):
+        image_urls = []
+        for url in self.urls:
+            data = self.get_json(url)
+            try:
+                image_urls += self.extract_image_url(data)
+            except KeyError as error:
+                print(error)
+        return image_urls
+
+    def form_urls(self, index, subreddit, order, count):
+        url = r'http://www.reddit.com/' + index + '/' + subreddit
+        tail = '/.json'+ '?limit=' + count
+        url += '/' + order
+        url += tail
+        return url
 
     def concat_urls(self):
         urls = []
         for item in self.combinations:
-            print(item)
-
-    def form_urls(self, *args, **kwargs):
-            # url = r'http://www.reddit.com/' + index + '/' + sec_index
-            # tail = '/.json'+ '?limit=' + count
-            # if order:
-                # url += '/' + order
-        # return url
-        pass
-
-    def get_json(self, data):
-
-        pass
-
-    def get_image_urls(self):
-        pass
+            urls.append(self.form_urls(*item))
+        return urls
 
     def combinatronics_of_params(self):
-        clean_subreddits = [x.strip() for x in self.subreddits.split(',')]
-        clean_order = [x.strip() for x in self.order.split(',')]
-        return list(itertools.product(
-            self.index, self.clean_subreddits, self.clean_order, self.count))
+        clean_subreddits = [x.strip() for x in self.s.split(',')]
+        clean_subreddits = filter(None, clean_subreddits)
+        clean_order = [x.strip() for x in self.o.split(',')]
+        clean_order = filter(None, clean_order)
+        return list(itertools.product( self.i, clean_subreddits, clean_order, [self.c,]))
 
 def set_up_parser():
     parser = argparse.ArgumentParser(description='Parse arguments')
@@ -57,9 +93,9 @@ def set_up_parser():
 def main():
     # return args
     args = set_up_parser()
-    reddit = RedditLogic(vars(args))
-    reddit.dispatch()
-    # print(set(urls), sep='\n')
+    reddit = RedditLogic(**vars(args))
+    show = reddit.dispatch()
+    print(*show, sep='\n')
 
 if __name__ == "__main__":
     main()

@@ -5,12 +5,11 @@ from reddit_view import view
 class TestRedditLogic(unittest.TestCase):
 
     def setUp(self):
-        self.argvs = vars(view.set_up_parser())
-        pass
+        self.initial = {'i': 'r', 's': 'test,another,', 'o': 'hot,new,top', 'p': '100', 'c': '100'}
 
     def test_kwargs_in_self(self):
-        # reddit = view.RedditLogic(argvs)
-        # self.assertIn(argvs, reddit.__dict__)
+        reddit = view.RedditLogic(self.initial)
+        self.assertIn(dir(self.initial), dir(reddit))
         pass
 
 
