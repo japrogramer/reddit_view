@@ -39,5 +39,5 @@ setup(
     ],
     zip_safe=False,
     entry_points={
-        'console_scripts': ['reddit_view=reddit_view.__main__:entry',],},
+        'console_scripts': ['reddit_view=reddit_view.view:main',],},
     )
