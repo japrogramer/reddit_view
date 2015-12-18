@@ -1,10 +1,6 @@
 #!/usr/bin/env python
-from pprint import pprint
-import sys
-import argparse
 import requests
 import json
-import time
 import re
 import itertools
 
@@ -22,6 +18,8 @@ class RedditLogic:
             'User-Agent': 'curl/7.24.0',
             'Content-Type': 'application/json; charset=UTF-8'}
     combinations = []
+    urls = []
+    urls_to_filter = []
 
     def __init__(self, *args, **kwargs):
         for key, value in kwargs.items():
@@ -41,7 +39,7 @@ class RedditLogic:
                 if (PATTERNS['ext'](url)):
                     clean_urls.append(url)
                 elif not PATTERNS['not_img'](url):
-                    merged = imgur_link + '.jpg'
+                    merged = url + '.jpg'
                     clean_urls.append(merged)
 
         return clean_urls
@@ -65,7 +63,7 @@ class RedditLogic:
             try:
                 image_urls += self.extract_image_url(data)
             except KeyError as error:
-                print(error)
+                raise error
         return image_urls
 
     def form_urls(self, index, subreddit, order, count):
@@ -92,49 +90,3 @@ class RedditLogic:
                     clean_subreddits,
                     clean_order,
                     [self.c, ]))
-
-
-def set_up_parser():
-    parser = argparse.ArgumentParser(description='Parse arguments')
-    parser.add_argument(
-            '-i', '--i',
-            metavar='r', nargs='?',
-            help='Index for subs', default='r', required=False)
-
-    parser.add_argument(
-            '-s', '--s',
-            metavar='funy,', nargs='?',
-            help='comma seperated list of subreddits',
-            default='funy,', required=False)
-
-    parser.add_argument(
-            '-o', '--o',
-            metavar='hot,top', nargs='?',
-            help='comma seperated list of orders',
-            default='hot,', required=False)
-
-    parser.add_argument(
-            '-c', '--c',
-            metavar='nnn', nargs='?',
-            help='count of posts to consider',
-            default='100', required=False)
-
-    parser.add_argument(
-            '-p', '--p',
-            metavar='nnn', nargs='?',
-            help='count of points post must have',
-            default='100', required=False)
-
-    args = parser.parse_args()
-    return args
-
-
-def main():
-    # return args
-    args = set_up_parser()
-    reddit = RedditLogic(**vars(args))
-    show = reddit.dispatch()
-    print(*show, sep='\n')
-
-if __name__ == "__main__":
-    main()
