@@ -3,6 +3,7 @@ import requests
 import json
 import re
 import itertools
+import time
 
 PATTERNS = {
     'gallery':  (lambda x: re.compile(".+\/(a|gallery|gfycat)\/.+$").match(x)),
@@ -58,11 +59,21 @@ class RedditLogic:
 
     def get_image_urls(self):
         image_urls = []
+        count = 0
+        elapsed = 0
+        wait = 3
         for url in self.urls:
             data = self.get_json(url)
+            count += 1
             try:
+                start = time.time()
+                if elapsed < wait:
+                    time.sleep(wait)
                 image_urls += self.extract_image_url(data)
+                elapsed = start - time.time()
             except KeyError as error:
+                print(count)
+                print(data)
                 raise error
         return image_urls
 
