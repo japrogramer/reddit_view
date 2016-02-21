@@ -23,8 +23,7 @@ class RedditLogic:
     urls_to_filter = []
 
     def __init__(self, *args, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+        self.__dict__.update(kwargs)
 
     def dispatch(self):
         self.combinations = self.combinatronics_of_params()
