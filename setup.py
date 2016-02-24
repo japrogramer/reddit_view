@@ -11,7 +11,7 @@ NAME = 'reddit_view'
 DESCRIPTION = 'a reddit image collector'
 AUTHOR = 'Jorge Perez'
 AUTHOR_EMAIL = 'japrogramer@gmail.com'
-URL = 'http://localhost'
+URL = 'https://github.com/japrogramer/reddit_view'
 VERSION = __import__(PACKAGE).__version__
 
 # setup call
@@ -24,10 +24,10 @@ setup(
     author_email=AUTHOR_EMAIL,
     license='BSD',
     url=URL,
-    # packages=find_packages(exclude=["tests.*", "tests"]),
+    packages=find_packages(exclude=["tests.*", "tests"]),
     include_package_data=True,
     classifiers=[
-         'Development Status :: 3 - Alpha',
+         'Development Status :: 4 - Beta',
          'Environment :: Web Environment',
          'Intended Audience :: Developers',
          'License :: OSI Approved :: BSD License',
