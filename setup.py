@@ -34,6 +34,7 @@ setup(
          'Operating System :: OS Independent',
          'Programming Language :: Python',
     ],
+    keywords = 'reddit images imgur links list subreddits',
     install_requires=[
          'requests',
     ],
