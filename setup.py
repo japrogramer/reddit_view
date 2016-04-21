@@ -37,6 +37,7 @@ setup(
     keywords = 'reddit images imgur links list subreddits',
     install_requires=[
          'requests',
+         'beautifulsoup4',
     ],
     zip_safe=False,
     entry_points={

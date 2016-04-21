@@ -85,5 +85,16 @@ class TestRedditLogic(unittest.TestCase):
         self.assertTrue(mock_json.json.called)
 
 
+class TestImgurGallery(unittest.TestCase):
+
+    def setUp(self):
+        self.path = 'fake'
+
+    def test_gen_list(self):
+        img_class = view.ImgurGallery(self.path)
+        with self.assertRaises(Exception):
+            img_class.dispatch()
+
+
 if __name__ == '__main__':
         unittest.main()

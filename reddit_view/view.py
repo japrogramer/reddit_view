@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from bs4 import BeautifulSoup
 import requests
 import json
 import re
@@ -41,6 +42,11 @@ class RedditLogic:
                 elif not PATTERNS['not_img'](url):
                     merged = url + '.jpg'
                     clean_urls.append(merged)
+            elif PATTERNS['gallery'](url):
+                gallery = ImgurGallery(**{'url': url})
+                gallery_list = gallery.dispatch()
+                clean_urls.extend(gallery_list)
+
 
         return clean_urls
 
@@ -100,3 +106,37 @@ class RedditLogic:
                     clean_subreddits,
                     clean_order,
                     [self.c, ]))
+
+
+class ImgurGallery:
+    request_headers = {
+            'User-Agent': 'curl/7.24.0',
+            'Content-Type': 'application/json; charset=UTF-8'}
+
+    page = None
+
+    def __init__(self, *args, **kwargs):
+        self.__dict__.update(kwargs)
+
+    def dispatch(self):
+        self.get_page()
+        return self.get_gallery()
+
+    def get_page(self):
+        try:
+            self.page = requests.get(self.url, headers=self.request_headers)
+        except:
+            raise Exception('spam', 'eggs')
+        return
+
+    def get_gallery(self):
+        soup = BeautifulSoup(self.page.content, 'html.parser')
+        container = soup.find('div', {'class': 'post-images'})
+        # bad = lambda x: re.compile("^//.+$").match(x)
+        # for img in container.find_all('img'):
+            # if bad(img):
+                # add = 'http:' + img
+            # else:
+                # add = img
+        a_src = ['http:' + img.get('src') for img in container.find_all('img')]
+        return a_src
