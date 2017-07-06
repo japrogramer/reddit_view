@@ -1,10 +1,10 @@
 #!/usr/bin/env python
+import sys, requests, json, re, itertools, time, pprint
+
 from bs4 import BeautifulSoup
-import requests
-import json
-import re
-import itertools
-import time
+
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
 PATTERNS = {
     'gallery':  (lambda x: re.compile(".+\/(a|gallery|gfycat)\/.+$").match(x)),
@@ -14,11 +14,18 @@ PATTERNS = {
     'not_img': (lambda x: re.compile(".+(video|html|\/)(.+)?$").match(x)),
     }
 
+request_headers = {
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:45.0) Gecko/20100101 Firefox/45.0',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Connection': 'keep-alive',
+        'Cache-Control': 'max-age=0',
+        }
+
+
 
 class RedditLogic:
-    request_headers = {
-            'User-Agent': 'curl/7.24.0',
-            'Content-Type': 'application/json; charset=UTF-8'}
+
     combinations = []
     urls = []
     urls_to_filter = []
@@ -59,33 +66,33 @@ class RedditLogic:
         return links
 
     def get_json(self, url):
-        r = requests.get(url, headers=self.request_headers)
+        r = requests.get(url, headers=request_headers)
+        # r = requests.get(url)
         return r.json()
 
     def get_image_urls(self):
         image_urls = []
         count = 0
-        elapsed = 0
         wait = 3
         for url in self.urls:
             data = self.get_json(url)
             count += 1
             try:
-                start = time.time()
-                if elapsed < wait:
-                    time.sleep(wait)
+                start = time.time() + wait
+                time.sleep(wait)
                 image_urls += self.extract_image_url(data)
                 elapsed = start - time.time()
             except KeyError as error:
-                print(count)
-                print(data)
-                raise error
+                eprint('error \n')
+                eprint('url: ', url)
+                eprint(data)
         return image_urls
 
     def form_urls(self, index, subreddit, order, count):
         url = r'http://www.reddit.com/' + index + '/' + subreddit
-        tail = '/.json' + '?limit=' + count
         url += '/' + order
+
+        tail = '/.json' + '?limit=' + count
         url += tail
         return url
 
@@ -100,8 +107,7 @@ class RedditLogic:
         clean_subreddits = filter(None, clean_subreddits)
         clean_order = [x.strip() for x in self.o.split(',')]
         clean_order = filter(None, clean_order)
-        return list(
-                itertools.product(
+        return list(itertools.product(
                     self.i,
                     clean_subreddits,
                     clean_order,
@@ -109,9 +115,6 @@ class RedditLogic:
 
 
 class ImgurGallery:
-    request_headers = {
-            'User-Agent': 'curl/7.24.0',
-            'Content-Type': 'application/json; charset=UTF-8'}
 
     page = None
 
@@ -124,7 +127,7 @@ class ImgurGallery:
 
     def get_page(self):
         try:
-            self.page = requests.get(self.url, headers=self.request_headers)
+            self.page = requests.get(self.url, headers=request_headers)
         except:
             raise Exception('spam', 'eggs')
         return
@@ -132,11 +135,7 @@ class ImgurGallery:
     def get_gallery(self):
         soup = BeautifulSoup(self.page.content, 'html.parser')
         container = soup.find('div', {'class': 'post-images'})
-        # bad = lambda x: re.compile("^//.+$").match(x)
-        # for img in container.find_all('img'):
-            # if bad(img):
-                # add = 'http:' + img
-            # else:
-                # add = img
-        a_src = ['http:' + img.get('src') for img in container.find_all('img')]
-        return a_src
+        if container:
+            a_src = ['http:' + img.get('src') for img in container.find_all('img')]
+            return a_src
+        return []
