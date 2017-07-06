@@ -2,6 +2,7 @@
 import sys, requests, json, re, itertools, time, pprint
 
 from bs4 import BeautifulSoup
+from fake_useragent import UserAgent
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -14,14 +15,14 @@ PATTERNS = {
     'not_img': (lambda x: re.compile(".+(video|html|\/)(.+)?$").match(x)),
     }
 
+ua = UserAgent()
 request_headers = {
-        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:45.0) Gecko/20100101 Firefox/45.0',
+        'User-Agent': ua.random,
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.5',
         'Connection': 'keep-alive',
         'Cache-Control': 'max-age=0',
         }
-
 
 
 class RedditLogic:

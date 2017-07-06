@@ -38,6 +38,7 @@ setup(
     install_requires=[
          'requests',
          'beautifulsoup4',
+         'fake-useragent',
     ],
     zip_safe=False,
     entry_points={
