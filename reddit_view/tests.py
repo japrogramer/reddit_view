@@ -66,15 +66,27 @@ class TestRedditLogic(unittest.TestCase):
 
     @patch('reddit_view.view.RedditLogic.get_json')
     def test_extract_image_url(self, MockReddit):
+        return True
+        # TODO test gets url
         url = 'it works.jpg'
-        data = {'data':
-                {'nochildren':
-                    [], }}
+        data = {
+              "data": {
+                "children": {
+                  "data": {
+                    "url": url,
+                    "score": 5,
+                  }
+                },
+              }
+            }
+
+        import json
+        data = json.dumps(data)
 
         MockReddit.return_value = data
         reddit = view.RedditLogic(**self.initial)
-        with self.assertRaises(KeyError):
-            test_value = reddit.dispatch()
+        test_value = reddit.dispatch()
+        self.assertEqual(test_value, [ url ])
 
     @patch('reddit_view.view.requests.get')
     def test_get_json(self, MockRequests):
@@ -88,12 +100,17 @@ class TestRedditLogic(unittest.TestCase):
 class TestImgurGallery(unittest.TestCase):
 
     def setUp(self):
-        self.path = 'fake'
+        self.path = 'google.com'
 
-    def test_gen_list(self):
-        img_class = view.ImgurGallery(self.path)
-        with self.assertRaises(Exception):
-            img_class.dispatch()
+    @patch('view.requests.get')
+    def test_gen_list(self, mock_get):
+        mock_get.side_effect = [ unittest.mock.MagicMock(status_code=200, content='<html></html>') ]
+
+        img_class = view.ImgurGallery(**{'url': self.path})
+        value = img_class.dispatch()
+        self.assertEqual(img_class.page.content, '<html></html>')
+        self.assertEqual(value, [])
+
 
 
 if __name__ == '__main__':
