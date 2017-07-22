@@ -13,5 +13,6 @@ reddit_view, gets links from subreddits
     
     # to view
     $cat ~/slideshow | xargs feh -D 5 --auto-zoom -g 800x800 -B black
+    $cat ~/slideshow | shuf | awk '{ sub(/gifv$/, "gif"); print }' | mplayer -vo xv -playlist -
 
 for more see the programs -h help option
