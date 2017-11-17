@@ -128,15 +128,17 @@ class ImgurGallery:
 
     def get_page(self):
         try:
-            self.page = requests.get(self.url, headers=request_headers)
+            album = 'https://imgur.com/ajaxalbums/getimages/{0}/hit.json'
+            albumhash = self.url.split('/')[-1:][0]
+            self.page = requests.get(album.format(albumhash), headers=request_headers)
         except:
             raise Exception('spam', 'eggs')
         return
 
     def get_gallery(self):
-        soup = BeautifulSoup(self.page.content, 'html.parser')
-        container = soup.find('div', {'class': 'post-images'})
-        if container:
-            a_src = ['http:' + img.get('src') for img in container.find_all('img')]
-            return a_src
+        # soup = BeautifulSoup(self.page.content, 'html.parser')
+        # container = soup.find('div', {'class': 'post-images'})
+        # if container:
+        a_src = ['http://i.imgur.com/' + img.get('hash') + img.get('ext') for img in self.page.json()['data']['images']]
+        return a_src
         return []

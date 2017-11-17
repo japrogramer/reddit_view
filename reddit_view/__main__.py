@@ -1,4 +1,4 @@
-from .view import RedditLogic
+from .view import RedditLogic, ImgurGallery
 
 import argparse
 
@@ -36,6 +36,11 @@ def set_up_parser():
 
     args = parser.parse_args()
     return args
+
+
+def getimgurA(url):
+    delay = ImgurGallery(url=url)
+    return delay.dispatch()
 
 
 def main():
