@@ -139,6 +139,11 @@ class ImgurGallery:
         # soup = BeautifulSoup(self.page.content, 'html.parser')
         # container = soup.find('div', {'class': 'post-images'})
         # if container:
-        a_src = ['http://i.imgur.com/' + img.get('hash') + img.get('ext') for img in self.page.json()['data']['images']]
-        return a_src
+        try:
+            if len(self.page.json()['data']) > 0:
+                a_src = ['http://i.imgur.com/' + img.get('hash') + img.get('ext')
+                        for img in self.page.json()['data']['images']]
+                return a_src
+        except Exception as e:
+            pass
         return []
